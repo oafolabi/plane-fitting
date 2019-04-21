@@ -15,6 +15,10 @@ def get_point_dist(points, plane):
     # return: 1d array of size N (number of points)
     dists = np.abs(points @ plane) / np.sqrt(plane[0]**2 + plane[1]**2 + plane[2]**2)
     return dists
+def get_point_dist2(points, plane):
+    # return: 1d array of size N (number of points)
+    dists = np.abs(np.dot(points, np.reshape(plane, (4,1))))
+    return dists
 
 def fit_plane_LSE_RANSAC(points, iters=1000, inlier_thresh=0.05, return_outlier_list=False):
     # points: Nx4 homogeneous 3d points
@@ -44,10 +48,20 @@ def fit_plane_LSE_RANSAC(points, iters=1000, inlier_thresh=0.05, return_outlier_
 
     final_points = points[max_inlier_list, :]
     plane = fit_plane_LSE(final_points)
+    normal = plane[:-1]
+    scale = np.linalg.norm(normal)
+    plane = plane/scale
+
     
-    fit_variance = np.var(get_point_dist(final_points, plane))
-    print('RANSAC fit variance: %f' % fit_variance)
-    print(plane)
+    fit_dist = get_point_dist(final_points, plane)
+    # fit_dist2 = get_point_dist(final_points, plane)
+    fit_variance = np.var(fit_dist)
+    fit_MSE = np.mean(np.square(fit_dist))
+    # fit_MSE2 = np.mean(np.square(fit_dist2))
+    # print('RANSAC fit MSE: %f' % fit_MSE)
+    # print('RANSAC fit MSE2: %f' % fit_MSE2)
+    # print('RANSAC fit variance: %f' % fit_variance)
+    # print(plane)
 
     dists = get_point_dist(points, plane)
 
